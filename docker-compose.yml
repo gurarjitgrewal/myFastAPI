@@ -1,0 +1,13 @@
+services:
+  practice-api:
+    build: .
+    image: gurarjitgrewal/praactice-api
+    container_name: practice_api_container
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./patients.json:/app/patients.json
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: always
