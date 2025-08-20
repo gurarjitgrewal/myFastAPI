@@ -2,4 +2,8 @@ fastapi
 uvicorn
 scikit-learn
 pydantic
+<<<<<<< HEAD
 dotenv
+=======
+dotenv
+>>>>>>> a0bdb9ae7cc401324322a6bf9e7c9367dc8640a9
