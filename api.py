@@ -137,10 +137,10 @@ class Patient(BaseModel):
     id: Annotated[str, Field(..., description="The unique identifier for the patient", example="P001")]
     name: Annotated[str, Field(..., description="The name of the patient", example="John Doe")]
     city: Annotated[str, Field(..., description="The city where the patient resides", example="New York")]
-    age: Annotated[int, Field(...,gt=0,lt=120,description="The age of the patient", example=30)]
+    age: Annotated[int, Field(...,ge=1,le=120,description="The age of the patient", example=30)]
     gender: Annotated[Literal['male','female','other'], Field(..., description='gender of the patient')]
-    height: Annotated[float, Field(..., gt=0, description="The height of the patient in meters", example=1.75)]
-    weight: Annotated[float, Field(..., gt=0, description="The weight of the patient in kilograms", example=70.0)]
+    height: Annotated[float, Field(..., ge=1, description="The height of the patient in meters", example=1.75)]
+    weight: Annotated[float, Field(..., ge=1, description="The weight of the patient in kilograms", example=70.0)]
 
     @computed_field
     @property
@@ -165,10 +165,10 @@ class Patient(BaseModel):
 class PatientUpdate(BaseModel):
     name: Annotated[Optional[str], Field(None, description="The name of the patient", example="John Doe")]
     city: Annotated[Optional[str], Field(None, description="The city where the patient resides", example="New York")]
-    age: Annotated[Optional[int], Field(None, gt=0, lt=120, description="The age of the patient", example=30)]
+    age: Annotated[Optional[int], Field(None, ge=1, le=119, description="The age of the patient", example=30)]
     gender: Annotated[Optional[Literal['male', 'female', 'other']], Field(None, description="The gender of the patient", example="female")]
-    height: Annotated[Optional[float], Field(None, gt=0, description="The height of the patient in meters", example=1.75)]
-    weight: Annotated[Optional[float], Field(None, gt=0, description="The weight of the patient in kilograms", example=70.0)]
+    height: Annotated[Optional[float], Field(None, ge=1, description="The height of the patient in meters", example=1.75)]
+    weight: Annotated[Optional[float], Field(None, ge=1, description="The weight of the patient in kilograms", example=70.0)]
 
 def load_data():
     with open("patients.json", "r") as file:
