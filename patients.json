@@ -8,5 +8,15 @@
     "weight": 85,
     "bmi": 27.76,
     "verdict": "Overweight"
+  },
+  "P003": {
+    "name": "Sneha Kulkarni",
+    "city": "Pune",
+    "age": 22,
+    "gender": "female",
+    "height": 1.6,
+    "weight": 45,
+    "bmi": 17.58,
+    "verdict": "Underweight"
   }
 }
