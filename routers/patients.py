@@ -1,16 +1,25 @@
-from fastapi import APIRouter, Path, Query, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from typing import Optional, Literal, Annotated
 from pydantic import BaseModel, Field, computed_field
+import json, os
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
 
-# In-memory DB
-patients_db = {
-    "P001": {"name": "John Doe", "city": "New York", "age": 30, "gender": "male", "height": 1.75, "weight": 70.0},
-    "P002": {"name": "Ravi Mehta", "city": "Mumbai", "age": 35, "gender": "male", "height": 1.75, "weight": 85},
-}
+DATA_FILE = "patients.json"
 
+# ------------------ Helpers ------------------ #
+def load_patients():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_patients(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+# ------------------ Models ------------------ #
 class Patient(BaseModel):
     id: Annotated[str, Field(..., description="Patient ID", example="P001")]
     name: str
@@ -45,34 +54,57 @@ class PatientUpdate(BaseModel):
     height: Optional[float]
     weight: Optional[float]
 
+
+@router.post("/upload")
+async def upload_patients(file: UploadFile = File(...)):
+    """Upload a JSON file containing patient data."""
+    if not file.filename.endswith(".json"):
+        raise HTTPException(status_code=400, detail="Only .json files are allowed")
+
+    content = await file.read()
+    try:
+        patients = json.loads(content)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON file")
+
+    save_patients(patients)
+    return {"message": "Patients file uploaded successfully", "total_patients": len(patients)}
+
 @router.get("/")
 def view_all():
-    return patients_db
+    return load_patients()
 
 @router.get("/{patient_id}")
 def get_patient(patient_id: str):
-    if patient_id not in patients_db:
+    data = load_patients()
+    if patient_id not in data:
         raise HTTPException(status_code=404, detail="Patient not found")
-    return patients_db[patient_id]
+    return data[patient_id]
 
 @router.post("/create")
 def create_patient(patient: Patient):
-    if patient.id in patients_db:
+    data = load_patients()
+    if patient.id in data:
         raise HTTPException(status_code=400, detail="Patient already exists")
-    patients_db[patient.id] = patient.model_dump(exclude=["id"])
-    return JSONResponse(status_code=201, content={"message": "Patient created", "patient": patients_db[patient.id]})
+    data[patient.id] = patient.model_dump(exclude=["id"])
+    save_patients(data)
+    return JSONResponse(status_code=201, content={"message": "Patient created", "patient": data[patient.id]})
 
 @router.put("/update/{patient_id}")
 def update_patient(patient_id: str, patient_update: PatientUpdate):
-    if patient_id not in patients_db:
+    data = load_patients()
+    if patient_id not in data:
         raise HTTPException(status_code=404, detail="Patient not found")
     update_data = patient_update.model_dump(exclude_unset=True)
-    patients_db[patient_id].update(update_data)
-    return {"message": "Patient updated", "patient": patients_db[patient_id]}
+    data[patient_id].update(update_data)
+    save_patients(data)
+    return {"message": "Patient updated", "patient": data[patient_id]}
 
 @router.delete("/delete/{patient_id}")
 def delete_patient(patient_id: str):
-    if patient_id not in patients_db:
+    data = load_patients()
+    if patient_id not in data:
         raise HTTPException(status_code=404, detail="Patient not found")
-    del patients_db[patient_id]
+    del data[patient_id]
+    save_patients(data)
     return {"message": "Patient deleted"}

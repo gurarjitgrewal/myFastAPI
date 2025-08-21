@@ -3,3 +3,4 @@ uvicorn
 scikit-learn
 pydantic
 dotenv
+python-multipart
